@@ -82,3 +82,7 @@ tmp/
 
 # Production env file, never committed
 .env.prod
+
+# Cloudflare Workers build output
+frontend/.open-next/
+frontend/.wrangler/

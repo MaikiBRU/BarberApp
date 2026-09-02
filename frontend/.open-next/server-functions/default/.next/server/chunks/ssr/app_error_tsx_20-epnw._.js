@@ -1,3 +1,0 @@
-module.exports=[78141,a=>{"use strict";var b=a.i(87924),c=a.i(72131),d=a.i(40695);a.s(["default",0,function({error:a,reset:e}){return(0,c.useEffect)(()=>{console.error(a)},[a]),(0,b.jsxs)("div",{className:"mx-auto max-w-xl px-4 py-16 text-center sm:px-6",children:[(0,b.jsx)("h1",{className:"text-2xl font-semibold",children:"Algo salio mal"}),(0,b.jsx)("p",{className:"mt-2 text-sm text-ink-muted",children:"No pudimos mostrar esta pantalla. Podés reintentar o volver más tarde."}),(0,b.jsx)(d.Button,{className:"mt-6",onClick:e,children:"Reintentar"})]})}])}];
-
-//# sourceMappingURL=app_error_tsx_20-epnw._.js.map
