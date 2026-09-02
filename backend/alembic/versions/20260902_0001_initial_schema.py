@@ -80,8 +80,10 @@ def upgrade() -> None:
         sa.Column("is_active", sa.Boolean(), nullable=False),
         *_timestamps(),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("email"),
     )
+    # A unique index is the whole guarantee; adding a separate UNIQUE
+    # constraint would enforce the same rule twice and cost a second
+    # index on every write.
     op.create_index("ix_users_email", "users", ["email"], unique=True)
     op.create_index("ix_users_shop_id", "users", ["shop_id"])
     op.create_index("ix_users_role", "users", ["role"])
