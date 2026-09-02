@@ -1,0 +1,15 @@
+export const routes = {
+  home: "/",
+  login: "/login",
+  register: "/register",
+  booking: "/booking",
+  appointments: "/appointments",
+  appointment: (id: string) => `/appointments/${id}`,
+  profile: "/profile",
+  dashboard: "/dashboard",
+  dashboardAppointments: "/dashboard/appointments",
+  dashboardServices: "/dashboard/services",
+  dashboardExtras: "/dashboard/extras",
+  dashboardBarbers: "/dashboard/barbers",
+  dashboardHours: "/dashboard/hours",
+} as const;

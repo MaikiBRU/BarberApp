@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: barberapp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-barberapp}
+      POSTGRES_USER: ${POSTGRES_USER:-barberuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-barberpass}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-barberuser} -d ${POSTGRES_DB:-barberapp}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - barberapp-net
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: barberapp-backend
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DEBUG: ${DEBUG:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-barberuser}:${POSTGRES_PASSWORD:-barberpass}@postgres:5432/${POSTGRES_DB:-barberapp}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set JWT_SECRET_KEY in .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      SHOP_TIMEZONE: ${SHOP_TIMEZONE:-America/Argentina/Buenos_Aires}
+      CURRENCY: ${CURRENCY:-ARS}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      [
+        "sh",
+        "-c",
+        "cd /app && alembic -c /app/alembic.ini upgrade head && cd /app/backend && uvicorn main:app --host 0.0.0.0 --port 8000",
+      ]
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    networks:
+      - barberapp-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    container_name: barberapp-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    networks:
+      - barberapp-net
+
+networks:
+  barberapp-net:
+    driver: bridge
+
+volumes:
+  pg_data:

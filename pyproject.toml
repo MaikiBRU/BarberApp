@@ -1,0 +1,59 @@
+[project]
+name = "barberapp-backend"
+version = "1.0.0"
+description = "Booking and operations API for a barbershop"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+pythonpath = ["backend"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::PendingDeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 80
+target-version = "py312"
+src = ["backend"]
+exclude = [".venv", "backend/alembic/versions"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # import sorting
+    "B",    # bugbear
+    "UP",   # pyupgrade
+    "D",    # docstrings
+    "ASYNC",
+    "S",    # bandit security checks
+    "C4",
+    "SIM",
+]
+ignore = [
+    "D203",  # conflicts with D211
+    "D213",  # conflicts with D212
+    "B008",  # FastAPI relies on calls in argument defaults
+]
+
+[tool.ruff.lint.per-file-ignores]
+"backend/tests/**" = ["S101", "S105", "S106", "D103"]
+"backend/scripts/**" = ["E402"]
+"backend/tests/conftest.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "api",
+    "auth",
+    "core",
+    "db",
+    "exceptions",
+    "middleware",
+    "models",
+    "repositories",
+    "schemas",
+    "services",
+    "tests",
+]
