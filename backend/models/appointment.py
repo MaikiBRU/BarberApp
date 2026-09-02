@@ -85,7 +85,7 @@ class Appointment(TimestampMixin, Base):
         default=new_id,
     )
     shop_id: Mapped[str | None] = mapped_column(
-        String(36),
+        String(64),
         index=True,
         nullable=True,
     )

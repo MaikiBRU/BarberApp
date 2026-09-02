@@ -1,0 +1,18 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/appointments/[id]/page": "/appointments/[id]",
+  "/appointments/page": "/appointments",
+  "/booking/page": "/booking",
+  "/dashboard/appointments/page": "/dashboard/appointments",
+  "/dashboard/barbers/page": "/dashboard/barbers",
+  "/dashboard/extras/page": "/dashboard/extras",
+  "/dashboard/hours/page": "/dashboard/hours",
+  "/dashboard/page": "/dashboard",
+  "/dashboard/services/page": "/dashboard/services",
+  "/demo/page": "/demo",
+  "/login/page": "/login",
+  "/page": "/",
+  "/profile/page": "/profile",
+  "/register/page": "/register"
+}

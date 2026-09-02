@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "barberapp-frontend",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-04-29",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "routes": [
+    {
+      "pattern": "barberapp.aaronbrumat.com.ar",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    // Empty on purpose: the browser calls /api/... on this same origin and
+    // a Next rewrite forwards it to the API. No CORS, and the shared
+    // backend host stays an implementation detail.
+    "NEXT_PUBLIC_API_URL": "",
+    "API_ORIGIN": "https://api-datacenter.aaronbrumat.com.ar/barberapp"
+  }
+}
