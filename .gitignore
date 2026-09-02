@@ -80,3 +80,5 @@ tmp/
 .npm/
 .yarn/
 
+# Production env file, never committed
+.env.prod

@@ -1,0 +1,48 @@
+# Production stack for BarberApp.
+#
+# Only the API runs here: PostgreSQL is a container that already exists on
+# the host and serves a separate `barberapp` database, so a 1 GB instance
+# does not pay for a second database engine. The API listens on loopback
+# only; Caddy is the sole way in from the internet.
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: barberapp-api
+    container_name: barberapp-api
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    command:
+      [
+        "sh",
+        "-c",
+        "cd /app && alembic -c /app/alembic.ini upgrade head && cd /app/backend && uvicorn main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips '*'",
+      ]
+    ports:
+      - "127.0.0.1:8001:8000"
+    networks:
+      - shared
+    # Keeps the API from starving the host, and therefore from taking the
+    # neighbouring application down with it.
+    mem_limit: 320m
+    memswap_limit: 640m
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).status == 200 else 1)",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+networks:
+  # The database container lives in the neighbouring stack's network.
+  shared:
+    external: true
+    name: data-center_default

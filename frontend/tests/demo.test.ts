@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { formatRemaining } from "@/lib/demo-format";
 import { sessionStorageKey, useSessionStore } from "@/store/session-store";
@@ -86,5 +86,82 @@ describe("session store in demo mode", () => {
 
     expect(useSessionStore.getState().token).toBeNull();
     expect(useSessionStore.getState().isDemo).toBe(false);
+  });
+});
+
+describe("api client tenant awareness", () => {
+  it("attaches the stored session to otherwise public requests", async () => {
+    const { apiRequest } = await import("@/lib/api-client");
+    window.localStorage.setItem(
+      sessionStorageKey,
+      JSON.stringify({
+        token: "sandbox-token",
+        user: demoUser,
+        expiresAt: Date.now() + 60_000,
+        isDemo: true,
+      }),
+    );
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await apiRequest("/api/v1/catalog/services");
+
+    const headers = fetchMock.mock.calls[0][1].headers as Headers;
+    expect(headers.get("Authorization")).toBe("Bearer sandbox-token");
+    vi.unstubAllGlobals();
+  });
+
+  it("sends nothing when the stored session has expired", async () => {
+    const { apiRequest } = await import("@/lib/api-client");
+    window.localStorage.setItem(
+      sessionStorageKey,
+      JSON.stringify({
+        token: "stale",
+        user: demoUser,
+        expiresAt: Date.now() - 1000,
+        isDemo: true,
+      }),
+    );
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await apiRequest("/api/v1/catalog/services");
+
+    const headers = fetchMock.mock.calls[0][1].headers as Headers;
+    expect(headers.get("Authorization")).toBeNull();
+    vi.unstubAllGlobals();
+  });
+
+  it("honours an explicit null token for a deliberately anonymous call", async () => {
+    const { apiRequest } = await import("@/lib/api-client");
+    window.localStorage.setItem(
+      sessionStorageKey,
+      JSON.stringify({
+        token: "sandbox-token",
+        user: demoUser,
+        expiresAt: Date.now() + 60_000,
+        isDemo: true,
+      }),
+    );
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await apiRequest("/api/v1/catalog/services", { token: null });
+
+    const headers = fetchMock.mock.calls[0][1].headers as Headers;
+    expect(headers.get("Authorization")).toBeNull();
+    vi.unstubAllGlobals();
   });
 });

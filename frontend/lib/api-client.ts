@@ -86,10 +86,35 @@ export const apiBaseUrl = (
 type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   body?: unknown;
+  /**
+   * Bearer token. Defaults to the active session, which matters for the
+   * endpoints that are public but tenant-aware: a demo visitor must see
+   * their sandbox's catalog, barbers and hours, not the real shop's.
+   * Pass `null` to force an anonymous request.
+   */
   token?: string | null;
   query?: Record<string, string | number | boolean | string[] | undefined>;
   signal?: AbortSignal;
 };
+
+/** Read the stored session token without importing the store eagerly. */
+function activeToken(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    const raw = window.localStorage.getItem("barberapp.session");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as {
+      token?: string;
+      expiresAt?: number;
+    };
+    if (!parsed?.token || !parsed?.expiresAt) return null;
+    return parsed.expiresAt > Date.now() ? parsed.token : null;
+  } catch {
+    return null;
+  }
+}
 
 function buildQuery(query: RequestOptions["query"]): string {
   if (!query) {
@@ -124,7 +149,9 @@ export async function apiRequest<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { method = "GET", body, token, query, signal } = options;
+  const { method = "GET", body, query, signal } = options;
+  const token =
+    options.token === undefined ? activeToken() : options.token;
 
   const headers = new Headers({ Accept: "application/json" });
   if (body !== undefined) {
