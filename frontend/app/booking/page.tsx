@@ -10,7 +10,7 @@ export default function BookingPage() {
   return (
     <PageContainer>
       <PageHeader
-        description="Elegi servicio, barbero y horario. Los turnos que ves son los que realmente estan libres."
+        description="Elegí servicio, barbero y horario. Los turnos que ves son los que realmente están libres."
         eyebrow="Reserva"
         title="Reservar turno"
       />

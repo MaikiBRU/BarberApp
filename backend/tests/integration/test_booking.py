@@ -53,7 +53,7 @@ def test_customer_books_a_slot_returned_by_availability(
     body = response.json()
     assert body["status"] == "pending"
     assert body["duration_minutes"] == 45
-    assert body["service"]["name"] == "Corte clasico"
+    assert body["service"]["name"] == "Corte clásico"
     assert body["total_price_cents"] == 1300000
     assert body["can_cancel"] is True
 

@@ -102,6 +102,41 @@ class Settings(BaseSettings):
         validation_alias="RATE_LIMIT_AUTH_WINDOW_SECONDS",
     )
 
+    # --- Portfolio demo sandbox -----------------------------------------
+    demo_enabled: bool = Field(True, validation_alias="DEMO_ENABLED")
+    demo_session_ttl_minutes: int = Field(
+        45,
+        ge=5,
+        le=240,
+        validation_alias="DEMO_SESSION_TTL_MINUTES",
+    )
+    demo_idle_timeout_minutes: int = Field(
+        15,
+        ge=2,
+        le=120,
+        validation_alias="DEMO_IDLE_TIMEOUT_MINUTES",
+    )
+    demo_max_appointments: int = Field(
+        12,
+        ge=1,
+        validation_alias="DEMO_MAX_APPOINTMENTS",
+    )
+    demo_max_writes: int = Field(
+        80,
+        ge=1,
+        validation_alias="DEMO_MAX_WRITES",
+    )
+    demo_max_active_sessions: int = Field(
+        40,
+        ge=1,
+        validation_alias="DEMO_MAX_ACTIVE_SESSIONS",
+    )
+    demo_rate_limit_per_hour: int = Field(
+        6,
+        ge=0,
+        validation_alias="DEMO_RATE_LIMIT_PER_HOUR",
+    )
+
     # --- Booking policy ------------------------------------------------
     shop_timezone: str = Field(
         "America/Argentina/Buenos_Aires",

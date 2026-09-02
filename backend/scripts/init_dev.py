@@ -29,15 +29,15 @@ from repositories.users import (  # noqa: E402
 from services.schedule_service import default_business_hours  # noqa: E402
 
 SERVICES = (
-    ("Corte clasico", "Corte a maquina y tijera con acabado", 45, 1300000),
+    ("Corte clásico", "Corte a máquina y tijera con acabado", 45, 1300000),
     ("Corte + barba", "Corte completo con perfilado de barba", 60, 1700000),
-    ("Perfilado de barba", "Diseno y afeitado con toalla caliente", 30, 900000),
-    ("Corte infantil", "Corte para menores de 12 anos", 30, 1000000),
+    ("Perfilado de barba", "Diseño y afeitado con toalla caliente", 30, 900000),
+    ("Corte infantil", "Corte para menores de 12 años", 30, 1000000),
 )
 
 EXTRAS = (
     ("Lavado", "Lavado y masaje capilar previo al servicio", 10, 300000),
-    ("Mascarilla facial", "Tratamiento facial rapido", 15, 450000),
+    ("Mascarilla facial", "Tratamiento facial rápido", 15, 450000),
 )
 
 STAFF = (

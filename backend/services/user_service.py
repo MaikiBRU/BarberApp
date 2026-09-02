@@ -3,6 +3,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.password_utils import PasswordUtils
+from core.tenancy import Tenant
 from exceptions.errors import ConflictError, NotFoundError
 from models.enums import UserRole
 from models.user import BarberProfile, User
@@ -23,12 +24,17 @@ from schemas.user import (
 class UserService:
     """Coordinate barber management and customer profiles."""
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(
+        self,
+        db: AsyncSession,
+        tenant: Tenant | None = None,
+    ) -> None:
         """Wire the user repositories."""
         self.db = db
-        self.users = UserRepository(db)
-        self.barbers = BarberRepository(db)
-        self.customers = CustomerRepository(db)
+        self.tenant = tenant or Tenant.real()
+        self.users = UserRepository(db, self.tenant)
+        self.barbers = BarberRepository(db, self.tenant)
+        self.customers = CustomerRepository(db, self.tenant)
 
     # ------------------------------------------------------------------
     # Barbers
@@ -49,7 +55,7 @@ class UserService:
         """Create a barber account together with its profile."""
         email = data.email.lower().strip()
         if await self.users.get_by_email(email):
-            raise ConflictError("An account with that email already exists.")
+            raise ConflictError("Ya existe una cuenta con ese email.")
 
         user = await self.users.create(
             {
@@ -75,7 +81,7 @@ class UserService:
         """Update a barber profile."""
         profile = await self.barbers.get_profile(barber_id)
         if profile is None:
-            raise NotFoundError("Barber", barber_id)
+            raise NotFoundError("barber", barber_id)
 
         updated = await self.barbers.update(
             profile,
@@ -90,7 +96,7 @@ class UserService:
         """Return the barber profile owned by a user account."""
         profile = await self.barbers.get_by_user_id(user.id)
         if profile is None:
-            raise NotFoundError("Barber profile", user.id)
+            raise NotFoundError("barber_profile", user.id)
         return profile
 
     # ------------------------------------------------------------------

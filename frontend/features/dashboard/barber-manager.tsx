@@ -107,8 +107,8 @@ export function BarberManager() {
           <InputField
             autoComplete="new-password"
             error={fieldErrors.password}
-            hint="Minimo 8 caracteres. El barbero podra cambiarla luego."
-            label="Contrasena inicial"
+            hint="Mínimo 8 caracteres. El barbero podra cambiarla luego."
+            label="Contraseña inicial"
             minLength={8}
             name="password"
             required
@@ -116,7 +116,7 @@ export function BarberManager() {
           />
           <InputField
             error={fieldErrors.phone}
-            label="Telefono"
+            label="Teléfono"
             maxLength={40}
             name="phone"
             type="tel"
@@ -124,7 +124,7 @@ export function BarberManager() {
           <div className="sm:col-span-2">
             <TextareaField
               error={fieldErrors.bio}
-              label="Descripcion"
+              label="Descripción"
               maxLength={1000}
               name="bio"
             />
@@ -151,7 +151,7 @@ export function BarberManager() {
         />
       ) : query.data.length === 0 ? (
         <EmptyState
-          description="Crea al menos un barbero para poder recibir turnos."
+          description="Creá al menos un barbero para poder recibir turnos."
           title="Sin barberos"
         />
       ) : (

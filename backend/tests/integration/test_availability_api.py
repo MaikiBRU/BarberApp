@@ -29,7 +29,7 @@ def test_longer_service_offers_fewer_slots(api: ApiHelper) -> None:
     barber_id = api.barber()["id"]
 
     short = api.availability(
-        service_id=api.service_id("Corte clasico"),
+        service_id=api.service_id("Corte clásico"),
         day=day,
         barber_id=barber_id,
     )

@@ -3,7 +3,9 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.jwt_config import require_role
+from api.v1.deps import demo_write_guard
+from auth.jwt_config import get_tenant, require_role
+from core.tenancy import Tenant
 from db.session import get_db
 from models.enums import UserRole
 from models.user import User
@@ -29,9 +31,10 @@ require_admin = require_role(UserRole.ADMIN)
 )
 async def list_services(
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
 ) -> list[ServiceRead]:
     """Return the services customers can book."""
-    return await CatalogService(db).list_services()
+    return await CatalogService(db, tenant).list_services()
 
 
 @router.get(
@@ -42,10 +45,11 @@ async def list_services(
 async def list_services_admin(
     include_inactive: bool = Query(default=True),
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     _: User = Depends(require_admin),
 ) -> list[ServiceRead]:
     """Return every service for the admin catalog screen."""
-    return await CatalogService(db).list_services(
+    return await CatalogService(db, tenant).list_services(
         include_inactive=include_inactive,
     )
 
@@ -59,10 +63,12 @@ async def list_services_admin(
 async def create_service(
     payload: ServiceCreate,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     _: User = Depends(require_admin),
+    _quota: None = Depends(demo_write_guard),
 ) -> ServiceRead:
     """Create a bookable service. Administrators only."""
-    return await CatalogService(db).create_service(payload)
+    return await CatalogService(db, tenant).create_service(payload)
 
 
 @router.patch(
@@ -74,10 +80,12 @@ async def update_service(
     service_id: str,
     payload: ServiceUpdate,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     _: User = Depends(require_admin),
+    _quota: None = Depends(demo_write_guard),
 ) -> ServiceRead:
     """Update a service. Administrators only."""
-    return await CatalogService(db).update_service(service_id, payload)
+    return await CatalogService(db, tenant).update_service(service_id, payload)
 
 
 @router.get(
@@ -87,9 +95,10 @@ async def update_service(
 )
 async def list_extras(
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
 ) -> list[ProductExtraRead]:
     """Return the add-ons customers can attach to a booking."""
-    return await CatalogService(db).list_extras()
+    return await CatalogService(db, tenant).list_extras()
 
 
 @router.get(
@@ -100,10 +109,11 @@ async def list_extras(
 async def list_extras_admin(
     include_inactive: bool = Query(default=True),
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     _: User = Depends(require_admin),
 ) -> list[ProductExtraRead]:
     """Return every extra for the admin catalog screen."""
-    return await CatalogService(db).list_extras(
+    return await CatalogService(db, tenant).list_extras(
         include_inactive=include_inactive,
     )
 
@@ -117,10 +127,12 @@ async def list_extras_admin(
 async def create_extra(
     payload: ProductExtraCreate,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     _: User = Depends(require_admin),
+    _quota: None = Depends(demo_write_guard),
 ) -> ProductExtraRead:
     """Create an appointment extra. Administrators only."""
-    return await CatalogService(db).create_extra(payload)
+    return await CatalogService(db, tenant).create_extra(payload)
 
 
 @router.patch(
@@ -132,7 +144,9 @@ async def update_extra(
     extra_id: str,
     payload: ProductExtraUpdate,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     _: User = Depends(require_admin),
+    _quota: None = Depends(demo_write_guard),
 ) -> ProductExtraRead:
     """Update an appointment extra. Administrators only."""
-    return await CatalogService(db).update_extra(extra_id, payload)
+    return await CatalogService(db, tenant).update_extra(extra_id, payload)

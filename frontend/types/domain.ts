@@ -172,3 +172,48 @@ export type Page<T> = {
   limit: number;
   offset: number;
 };
+
+export type DemoPersona = {
+  role: UserRole;
+  label: string;
+  description: string;
+};
+
+export type DemoLimits = {
+  session_ttl_minutes: number;
+  idle_timeout_minutes: number;
+  max_appointments: number;
+  max_writes: number;
+};
+
+export type DemoSessionState = {
+  label: string;
+  expires_at: string;
+  seconds_remaining: number;
+  idle_seconds_remaining: number;
+  appointments_used: number;
+  appointments_max: number;
+  writes_used: number;
+  writes_max: number;
+  active_role: UserRole;
+};
+
+export type DemoSessionRead = {
+  state: DemoSessionState;
+  limits: DemoLimits;
+  personas: DemoPersona[];
+};
+
+export type DemoStartResponse = {
+  access_token: string;
+  token_type: "bearer";
+  expires_in: number;
+  user: UserRead;
+  session: DemoSessionRead;
+};
+
+export type DemoConfig = {
+  enabled: boolean;
+  limits: DemoLimits;
+  personas: DemoPersona[];
+};

@@ -15,13 +15,13 @@ export default function RegisterPage() {
           Crear cuenta
         </h1>
         <p className="mt-1 text-sm text-ink-muted">
-          Tarda menos de un minuto y ya podes reservar.
+          Tarda menos de un minuto y ya podés reservar.
         </p>
         <div className="mt-6">
           <RegisterForm />
         </div>
         <p className="mt-5 text-sm text-ink-muted">
-          Ya tenes cuenta?{" "}
+          Ya tenés cuenta?{" "}
           <Link
             className="font-semibold text-accent underline-offset-4 hover:underline"
             href={routes.login}

@@ -43,13 +43,13 @@ export function BookingFooter({
             &middot; {formatDuration(totalMinutes)}
           </>
         ) : (
-          "Elegi un servicio para continuar"
+          "Elegí un servicio para continuar"
         )}
       </p>
       <div className="flex gap-2">
         {step > 0 ? (
           <Button onClick={onBack} variant="secondary">
-            Atras
+            Atrás
           </Button>
         ) : null}
         {isLast ? (
@@ -59,7 +59,7 @@ export function BookingFooter({
             </Button>
           ) : (
             <Link href={routes.login}>
-              <Button>Iniciar sesion</Button>
+              <Button>Iniciar sesión</Button>
             </Link>
           )
         ) : (

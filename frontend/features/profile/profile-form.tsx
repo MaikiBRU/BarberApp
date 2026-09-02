@@ -78,7 +78,7 @@ export function ProfileForm() {
         <form className="space-y-4 p-4 sm:p-5" noValidate onSubmit={handleSubmit}>
           <InputField
             disabled
-            hint="El email no se puede cambiar desde aca."
+            hint="El email no se puede cambiar desde acá."
             label="Email"
             readOnly
             value={query.data.email ?? user?.email ?? ""}
@@ -96,7 +96,7 @@ export function ProfileForm() {
           <InputField
             autoComplete="tel"
             error={fieldErrors.phone}
-            label="Telefono"
+            label="Teléfono"
             maxLength={40}
             onChange={(event) =>
               setDraft({ ...values, phone: event.target.value })

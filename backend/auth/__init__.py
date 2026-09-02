@@ -5,6 +5,7 @@ from auth.jwt_config import (
     decode_token,
     get_current_user,
     get_optional_user,
+    get_tenant,
     require_auth,
     require_role,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "decode_token",
     "get_current_user",
     "get_optional_user",
+    "get_tenant",
     "require_auth",
     "require_role",
 ]

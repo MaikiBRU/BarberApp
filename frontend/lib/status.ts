@@ -17,7 +17,7 @@ export const appointmentStatusMeta: Record<AppointmentStatus, StatusMeta> = {
   confirmed: { label: "Confirmado", tone: "info" },
   completed: { label: "Completado", tone: "positive" },
   cancelled: { label: "Cancelado", tone: "danger" },
-  no_show: { label: "No asistio", tone: "neutral" },
+  no_show: { label: "No asistió", tone: "neutral" },
 };
 
 export const paymentStatusMeta: Record<PaymentStatus, StatusMeta> = {
@@ -38,10 +38,10 @@ export const transitionLabels: Record<AppointmentStatus, string> = {
 export const weekdayLabels = [
   "Lunes",
   "Martes",
-  "Miercoles",
+  "Miércoles",
   "Jueves",
   "Viernes",
-  "Sabado",
+  "Sábado",
   "Domingo",
 ] as const;
 

@@ -3,7 +3,9 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.jwt_config import get_current_user, require_role
+from api.v1.deps import demo_write_guard
+from auth.jwt_config import get_current_user, get_tenant, require_role
+from core.tenancy import Tenant
 from db.session import get_db
 from models.enums import UserRole
 from models.user import User
@@ -28,9 +30,10 @@ require_admin = require_role(UserRole.ADMIN)
 )
 async def list_barbers(
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
 ) -> list[BarberRead]:
     """Return active barbers without exposing their contact details."""
-    return await UserService(db).list_barbers()
+    return await UserService(db, tenant).list_barbers()
 
 
 @router.get(
@@ -41,10 +44,11 @@ async def list_barbers(
 async def list_barbers_admin(
     include_inactive: bool = Query(default=True),
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     _: User = Depends(require_admin),
 ) -> list[BarberRead]:
     """Return every barber with contact details. Administrators only."""
-    return await UserService(db).list_barbers(
+    return await UserService(db, tenant).list_barbers(
         include_inactive=include_inactive,
         include_contact=True,
     )
@@ -59,10 +63,12 @@ async def list_barbers_admin(
 async def create_barber(
     payload: BarberCreate,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     _: User = Depends(require_admin),
+    _quota: None = Depends(demo_write_guard),
 ) -> BarberRead:
     """Create a barber account and profile. Administrators only."""
-    return await UserService(db).create_barber(payload)
+    return await UserService(db, tenant).create_barber(payload)
 
 
 @router.patch(
@@ -74,10 +80,12 @@ async def update_barber(
     barber_id: str,
     payload: BarberUpdate,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     _: User = Depends(require_admin),
+    _quota: None = Depends(demo_write_guard),
 ) -> BarberRead:
     """Update a barber profile. Administrators only."""
-    return await UserService(db).update_barber(barber_id, payload)
+    return await UserService(db, tenant).update_barber(barber_id, payload)
 
 
 @router.get(
@@ -87,10 +95,11 @@ async def update_barber(
 )
 async def get_my_profile(
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     current_user: User = Depends(get_current_user),
 ) -> CustomerProfileRead:
     """Return the profile attached to the authenticated account."""
-    return await UserService(db).get_customer_profile(current_user)
+    return await UserService(db, tenant).get_customer_profile(current_user)
 
 
 @router.patch(
@@ -101,10 +110,12 @@ async def get_my_profile(
 async def update_my_profile(
     payload: CustomerProfileUpdate,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     current_user: User = Depends(get_current_user),
+    _quota: None = Depends(demo_write_guard),
 ) -> CustomerProfileRead:
     """Update the profile attached to the authenticated account."""
-    return await UserService(db).update_customer_profile(
+    return await UserService(db, tenant).update_customer_profile(
         current_user,
         payload,
     )

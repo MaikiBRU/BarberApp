@@ -91,7 +91,7 @@ async def seed_baseline(
         services = ServiceRepository(session)
         await services.create(
             {
-                "name": "Corte clasico",
+                "name": "Corte clásico",
                 "description": "Corte profesional",
                 "duration_minutes": 45,
                 "price_cents": 1300000,
@@ -171,7 +171,7 @@ class ApiHelper:
         assert response.status_code == 201, response.text
         return response.json()
 
-    def service_id(self, name: str = "Corte clasico") -> str:
+    def service_id(self, name: str = "Corte clásico") -> str:
         """Return the id of a seeded service by name."""
         services = self.client.get("/api/v1/catalog/services").json()
         return next(item["id"] for item in services if item["name"] == name)

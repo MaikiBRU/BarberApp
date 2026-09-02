@@ -57,9 +57,9 @@ export function DashboardOverview() {
               hint: `${summary.data.today.pending} pendientes de confirmar`,
             },
             {
-              label: "Proximos turnos",
+              label: "Próximos turnos",
               value: String(summary.data.upcoming_count),
-              hint: "Activos despues de hoy",
+              hint: "Activos después de hoy",
             },
             {
               label: "Facturado hoy",
@@ -100,7 +100,7 @@ export function DashboardOverview() {
         ) : agenda.data.length === 0 ? (
           <EmptyState
             description="No hay turnos agendados para hoy."
-            title="Dia libre"
+            title="Día libre"
           />
         ) : (
           <div className="divide-y divide-line">

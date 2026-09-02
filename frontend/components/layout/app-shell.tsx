@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { DemoBanner } from "@/components/layout/demo-banner";
 import { SiteHeader } from "@/components/layout/site-header";
 import { shopConfig } from "@/lib/config";
 
@@ -7,6 +8,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
+      <DemoBanner />
       <main className="flex-1">{children}</main>
       <footer className="border-t border-line bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-ink-muted sm:px-6 lg:px-8">

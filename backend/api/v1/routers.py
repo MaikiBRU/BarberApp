@@ -9,6 +9,7 @@ from api.v1.routes import (
     auth_router,
     catalog_router,
     dashboard_router,
+    demo_router,
     schedule_router,
     users_router,
 )
@@ -24,6 +25,7 @@ api_router.include_router(schedule_router)
 api_router.include_router(users_router)
 api_router.include_router(appointments_router)
 api_router.include_router(dashboard_router)
+api_router.include_router(demo_router)
 
 
 class DatabaseUnavailable(AppError):
@@ -47,6 +49,6 @@ async def readiness_check() -> dict[str, str]:
     except Exception as exc:
         logger.warning("Readiness check failed: %s", exc)
         raise DatabaseUnavailable(
-            "The database is not reachable.",
+            "No se puede acceder a la base de datos.",
         ) from exc
     return {"status": "ready", "database": "connected"}

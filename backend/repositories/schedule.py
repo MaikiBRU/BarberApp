@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.tenancy import Tenant
 from models.schedule import BarberTimeOff, BusinessHours
 from repositories.base import BaseRepository
 
@@ -12,20 +13,22 @@ from repositories.base import BaseRepository
 class BusinessHoursRepository(BaseRepository[BusinessHours]):
     """Data access for the weekly opening schedule."""
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(self, db: AsyncSession, tenant: Tenant | None = None) -> None:
         """Initialize repository for the BusinessHours model."""
-        super().__init__(db, BusinessHours)
+        super().__init__(db, BusinessHours, tenant, BusinessHours.shop_id)
 
     async def list_week(self) -> list[BusinessHours]:
         """Return the seven weekday rows ordered Monday to Sunday."""
-        statement = select(BusinessHours).order_by(BusinessHours.weekday)
+        statement = self.scoped(
+            select(BusinessHours).order_by(BusinessHours.weekday)
+        )
         result = await self.db.execute(statement)
         return list(result.scalars().all())
 
     async def get_for_weekday(self, weekday: int) -> BusinessHours | None:
         """Return the opening window for one weekday."""
-        statement = select(BusinessHours).where(
-            BusinessHours.weekday == weekday
+        statement = self.scoped(
+            select(BusinessHours).where(BusinessHours.weekday == weekday)
         )
         result = await self.db.execute(statement)
         return result.scalar_one_or_none()
@@ -34,9 +37,14 @@ class BusinessHoursRepository(BaseRepository[BusinessHours]):
 class TimeOffRepository(BaseRepository[BarberTimeOff]):
     """Data access for barber unavailability windows."""
 
-    def __init__(self, db: AsyncSession) -> None:
-        """Initialize repository for the BarberTimeOff model."""
-        super().__init__(db, BarberTimeOff)
+    def __init__(self, db: AsyncSession, tenant: Tenant | None = None) -> None:
+        """Initialize repository for the BarberTimeOff model.
+
+        Time off inherits the tenant of its barber profile, and every
+        caller resolves those ids through the scoped barber repository,
+        so no extra filter is needed here.
+        """
+        super().__init__(db, BarberTimeOff, tenant)
 
     async def list_for_barbers(
         self,

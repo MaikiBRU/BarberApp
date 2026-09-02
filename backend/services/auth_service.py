@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth.jwt_config import create_access_token
 from auth.password_utils import PasswordUtils
 from core.config import get_settings
+from core.tenancy import Tenant
 from exceptions.errors import AuthenticationError, ConflictError
 from models.enums import UserRole
 from models.user import User
@@ -16,18 +17,23 @@ from schemas.user import UserRead
 class AuthService:
     """Coordinate registration and login workflows."""
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(
+        self,
+        db: AsyncSession,
+        tenant: Tenant | None = None,
+    ) -> None:
         """Initialize service dependencies."""
         self.db = db
+        self.tenant = tenant or Tenant.real()
         self.settings = get_settings()
-        self.users = UserRepository(db)
-        self.customers = CustomerRepository(db)
+        self.users = UserRepository(db, self.tenant)
+        self.customers = CustomerRepository(db, self.tenant)
 
     async def register(self, data: RegisterRequest) -> TokenResponse:
         """Create a customer account and return an access token."""
         email = data.email.lower().strip()
         if await self.users.get_by_email(email):
-            raise ConflictError("An account with that email already exists.")
+            raise ConflictError("Ya existe una cuenta con ese email.")
 
         user = await self.users.create(
             {
@@ -61,9 +67,12 @@ class AuthService:
         )
 
         if user is None or not password_ok:
-            raise AuthenticationError("Invalid email or password.")
+            raise AuthenticationError("Email o contraseña incorrectos.")
         if not user.is_active:
-            raise AuthenticationError("This account has been disabled.")
+            raise AuthenticationError(
+                "Esta cuenta está deshabilitada. "
+                "Contactá a la barbería.",
+            )
 
         return self.build_token_response(user)
 

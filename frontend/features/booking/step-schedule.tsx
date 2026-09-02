@@ -65,7 +65,7 @@ export function StepSchedule({
             size="sm"
             variant="secondary"
           >
-            Manana
+            Mañana
           </Button>
         </div>
       </div>
@@ -85,8 +85,8 @@ export function StepSchedule({
           />
         ) : !isOpenDay ? (
           <EmptyState
-            description="Elegi otro dia para ver horarios disponibles."
-            title="La barberia esta cerrada ese dia"
+            description="Elegí otro día para ver horarios disponibles."
+            title="La barbería está cerrada ese día"
           />
         ) : slots.length === 0 ? (
           <EmptyState

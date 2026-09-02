@@ -5,6 +5,7 @@ from datetime import UTC, date, datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import get_settings
+from core.tenancy import Tenant
 from models.enums import BLOCKING_STATUSES, AppointmentStatus, UserRole
 from models.user import User
 from repositories.appointments import AppointmentRepository
@@ -24,13 +25,18 @@ class DashboardService:
     only their own agenda; an administrator sees the whole shop.
     """
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(
+        self,
+        db: AsyncSession,
+        tenant: Tenant | None = None,
+    ) -> None:
         """Wire the repositories the dashboard reads from."""
         self.db = db
+        self.tenant = tenant or Tenant.real()
         self.settings = get_settings()
-        self.appointments = AppointmentRepository(db)
-        self.services = ServiceRepository(db)
-        self.users = UserRepository(db)
+        self.appointments = AppointmentRepository(db, self.tenant)
+        self.services = ServiceRepository(db, self.tenant)
+        self.users = UserRepository(db, self.tenant)
 
     async def get_summary(self, viewer: User) -> DashboardSummary:
         """Return today's operational figures for the viewer."""

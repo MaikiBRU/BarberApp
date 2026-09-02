@@ -3,6 +3,7 @@
 from repositories.appointments import AppointmentRepository
 from repositories.base import BaseRepository
 from repositories.catalog import ProductExtraRepository, ServiceRepository
+from repositories.demo import DemoSessionRepository
 from repositories.schedule import BusinessHoursRepository, TimeOffRepository
 from repositories.users import (
     BarberRepository,
@@ -16,6 +17,7 @@ __all__ = [
     "BaseRepository",
     "BusinessHoursRepository",
     "CustomerRepository",
+    "DemoSessionRepository",
     "ProductExtraRepository",
     "ServiceRepository",
     "TimeOffRepository",

@@ -5,6 +5,7 @@ from datetime import UTC, date, datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import get_settings
+from core.tenancy import Tenant
 from exceptions.errors import NotFoundError, ValidationError
 from models.service import ProductExtra, Service
 from models.user import BarberProfile
@@ -24,16 +25,21 @@ from services.availability import TimeRange, compute_available_starts
 class AvailabilityService:
     """Resolve which start times a barber can actually take."""
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(
+        self,
+        db: AsyncSession,
+        tenant: Tenant | None = None,
+    ) -> None:
         """Wire the repositories the availability query depends on."""
         self.db = db
+        self.tenant = tenant or Tenant.real()
         self.settings = get_settings()
-        self.appointments = AppointmentRepository(db)
-        self.services = ServiceRepository(db)
-        self.extras = ProductExtraRepository(db)
-        self.barbers = BarberRepository(db)
-        self.hours = BusinessHoursRepository(db)
-        self.time_off = TimeOffRepository(db)
+        self.appointments = AppointmentRepository(db, self.tenant)
+        self.services = ServiceRepository(db, self.tenant)
+        self.extras = ProductExtraRepository(db, self.tenant)
+        self.barbers = BarberRepository(db, self.tenant)
+        self.hours = BusinessHoursRepository(db, self.tenant)
+        self.time_off = TimeOffRepository(db, self.tenant)
 
     async def get_availability(
         self,
@@ -128,7 +134,7 @@ class AvailabilityService:
         """Return a bookable service or raise a typed error."""
         service = await self.services.get_active(service_id)
         if service is None:
-            raise NotFoundError("Service", service_id)
+            raise NotFoundError("service", service_id)
         return service
 
     async def resolve_extras(
@@ -144,7 +150,7 @@ class AvailabilityService:
         if len(extras) != len(unique_ids):
             found = {extra.id for extra in extras}
             raise ValidationError(
-                "One or more selected extras are unavailable.",
+                "Alguno de los extras elegidos ya no está disponible.",
                 details={
                     "extra_ids": [
                         item for item in unique_ids if item not in found
@@ -163,7 +169,7 @@ class AvailabilityService:
 
         profile = await self.barbers.get_profile(barber_profile_id)
         if not self.is_bookable(profile):
-            raise NotFoundError("Barber", barber_profile_id)
+            raise NotFoundError("barber", barber_profile_id)
         return [profile]
 
     @staticmethod

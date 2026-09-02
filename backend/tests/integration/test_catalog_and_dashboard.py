@@ -13,8 +13,8 @@ def test_admin_creates_updates_and_deactivates_a_service(
         "/api/v1/catalog/services",
         headers=headers,
         json={
-            "name": "Coloracion",
-            "description": "Coloracion completa",
+            "name": "Coloración",
+            "description": "Coloración completa",
             "duration_minutes": 120,
             "price_cents": 4500000,
         },
@@ -52,7 +52,7 @@ def test_duplicate_service_names_are_rejected(api: ApiHelper) -> None:
         "/api/v1/catalog/services",
         headers=api.auth(SEED.admin_email),
         json={
-            "name": "Corte clasico",
+            "name": "Corte clásico",
             "duration_minutes": 30,
             "price_cents": 100,
         },
@@ -71,7 +71,7 @@ def test_service_validation_rejects_impossible_values(
         "/api/v1/catalog/services",
         headers=headers,
         json={
-            "name": "Servicio invalido",
+            "name": "Servicio inválido",
             "duration_minutes": 0,
             "price_cents": 1000,
         },
@@ -99,7 +99,7 @@ def test_shop_id_cannot_be_injected_by_the_client(api: ApiHelper) -> None:
             "name": "Servicio ajeno",
             "duration_minutes": 30,
             "price_cents": 1000,
-            "shop_id": "otra-barberia",
+            "shop_id": "otra-barbería",
         },
     )
 

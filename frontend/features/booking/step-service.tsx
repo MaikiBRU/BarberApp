@@ -42,7 +42,7 @@ export function StepService({
   if (services.data.length === 0) {
     return (
       <EmptyState
-        description="La barberia todavia no publico su carta de servicios."
+        description="La barbería todavía no publicó su carta de servicios."
         title="Sin servicios disponibles"
       />
     );
@@ -52,7 +52,7 @@ export function StepService({
     <div className="space-y-6">
       <fieldset className="space-y-2">
         <legend className="mb-2 text-sm font-semibold">
-          Elegi un servicio
+          Elegí un servicio
         </legend>
         {services.data.map((service) => (
           <OptionRow

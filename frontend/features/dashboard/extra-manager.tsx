@@ -99,7 +99,7 @@ export function ExtraManager() {
           <InputField
             error={fieldErrors.duration_minutes}
             hint="0 si no agrega tiempo al turno."
-            label="Duracion extra (minutos)"
+            label="Duración extra (minutos)"
             max={240}
             min={0}
             name="duration"
@@ -118,7 +118,7 @@ export function ExtraManager() {
           <div className="sm:col-span-2">
             <TextareaField
               error={fieldErrors.description}
-              label="Descripcion"
+              label="Descripción"
               maxLength={1000}
               name="description"
             />
@@ -145,7 +145,7 @@ export function ExtraManager() {
         />
       ) : query.data.length === 0 ? (
         <EmptyState
-          description="Los extras son opcionales; podes crearlos cuando quieras."
+          description="Los extras son opcionales; podés crearlos cuando quieras."
           title="Sin extras"
         />
       ) : (

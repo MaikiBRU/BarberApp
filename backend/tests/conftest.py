@@ -30,9 +30,16 @@ import anyio  # noqa: E402
 from db.session import get_db  # noqa: E402
 from main import app  # noqa: E402
 from models import Base  # noqa: E402
+from services import demo_service  # noqa: E402
 from tests.factories import ApiHelper, seed_baseline  # noqa: E402
 
 TEST_PASSWORD = "Password123!"
+
+
+@pytest.fixture(autouse=True)
+def reset_demo_rate_limit() -> None:
+    """Keep the process-wide sandbox counter from leaking between tests."""
+    demo_service.reset_rate_limit()
 
 
 @pytest.fixture()

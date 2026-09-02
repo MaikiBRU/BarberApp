@@ -37,7 +37,7 @@ export function LoginForm() {
       <InputField
         autoComplete="current-password"
         error={fieldErrors.password}
-        label="Contrasena"
+        label="Contraseña"
         name="password"
         required
         type="password"

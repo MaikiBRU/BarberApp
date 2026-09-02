@@ -32,13 +32,13 @@ export function HomePage() {
       <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
         <div className="pt-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-accent">
-            Barberia
+            Barbería
           </p>
           <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
             Reserva tu turno sin mensajes de ida y vuelta.
           </h1>
           <p className="mt-4 max-w-xl text-base text-ink-muted">
-            Elegi el servicio, el barbero y el horario. La disponibilidad se
+            Elegí el servicio, el barbero y el horario. La disponibilidad se
             calcula en el momento, asi que lo que ves es lo que hay.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -48,8 +48,26 @@ export function HomePage() {
             </LinkButton>
           </div>
 
+          <div className="mt-6 rounded-md border border-accent/30 bg-accent-soft px-4 py-3">
+            <p className="text-sm font-medium">
+              ¿Venís desde el portafolio?
+            </p>
+            <p className="mt-1 text-sm text-ink-muted">
+              Probá una barbería de prueba con datos ya cargados, sin crear
+              una cuenta.
+            </p>
+            <LinkButton
+              className="mt-3"
+              href={routes.demo}
+              size="sm"
+              variant="secondary"
+            >
+              Abrir la demo
+            </LinkButton>
+          </div>
+
           <div className="mt-10">
-            <h2 className="text-sm font-semibold">Horarios de atencion</h2>
+            <h2 className="text-sm font-semibold">Horarios de atención</h2>
             {hours.isPending ? (
               <div className="mt-3 space-y-2">
                 <SkeletonRows rows={2} />
@@ -82,7 +100,7 @@ export function HomePage() {
 
         <Card>
           <CardHeader
-            description="Precios y duracion reales del catalogo."
+            description="Precios y duración reales del catálogo."
             title="Servicios"
           />
           {services.isPending ? (
@@ -95,7 +113,7 @@ export function HomePage() {
             />
           ) : services.data.length === 0 ? (
             <EmptyState
-              description="Todavia no hay servicios publicados."
+              description="Todavía no hay servicios publicados."
               title="Sin servicios"
             />
           ) : (

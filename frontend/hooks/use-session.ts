@@ -14,6 +14,7 @@ import { useSessionStore } from "@/store/session-store";
 export function useSession() {
   const token = useSessionStore((state) => state.token);
   const user = useSessionStore((state) => state.user);
+  const isDemo = useSessionStore((state) => state.isDemo);
   const isReady = useSessionStore((state) => state.isReady);
   const hydrate = useSessionStore((state) => state.hydrate);
   const clearSession = useSessionStore((state) => state.clearSession);
@@ -27,6 +28,7 @@ export function useSession() {
   return {
     token,
     user,
+    isDemo,
     isReady,
     isAuthenticated: Boolean(token && user),
     isStaff: user?.role === "admin" || user?.role === "barber",

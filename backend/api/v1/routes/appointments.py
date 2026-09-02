@@ -5,7 +5,9 @@ from datetime import date, datetime
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.jwt_config import get_current_user
+from api.v1.deps import demo_booking_guard, demo_write_guard
+from auth.jwt_config import get_current_user, get_tenant
+from core.tenancy import Tenant
 from db.session import get_db
 from exceptions.errors import AuthorizationError
 from models.enums import AppointmentStatus, UserRole
@@ -40,13 +42,14 @@ async def get_availability(
     ),
     extra_ids: list[str] = Query(default_factory=list),
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
 ) -> AvailabilityResponse:
     """Return the slots a customer can actually book.
 
     The frontend never invents times: it renders exactly what this
     endpoint returns, and the booking endpoint revalidates the choice.
     """
-    return await AvailabilityService(db).get_availability(
+    return await AvailabilityService(db, tenant).get_availability(
         AvailabilityQuery(
             date=day,
             service_id=service_id,
@@ -71,10 +74,11 @@ async def list_appointments(
     offset: int = Query(default=0, ge=0),
     newest_first: bool = False,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     current_user: User = Depends(get_current_user),
 ) -> Page[AppointmentRead]:
     """Return a page of appointments scoped to the caller's role."""
-    return await AppointmentService(db).list_for_viewer(
+    return await AppointmentService(db, tenant).list_for_viewer(
         current_user,
         date_from=date_from,
         date_to=date_to,
@@ -95,10 +99,11 @@ async def list_appointments(
 async def get_appointment(
     appointment_id: str,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     current_user: User = Depends(get_current_user),
 ) -> AppointmentRead:
     """Return an appointment the caller is entitled to read."""
-    return await AppointmentService(db).get_for_viewer(
+    return await AppointmentService(db, tenant).get_for_viewer(
         appointment_id,
         current_user,
     )
@@ -113,7 +118,9 @@ async def get_appointment(
 async def create_appointment(
     payload: AppointmentCreate,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     current_user: User = Depends(get_current_user),
+    _quota: None = Depends(demo_booking_guard),
 ) -> AppointmentRead:
     """Book a slot for the authenticated customer.
 
@@ -121,10 +128,10 @@ async def create_appointment(
     """
     if current_user.role == UserRole.BARBER:
         raise AuthorizationError(
-            "Barbers cannot book appointments for themselves.",
+            "Los barberos no reservan turnos para sí mismos.",
         )
 
-    appointment = await BookingService(db).create_appointment(
+    appointment = await BookingService(db, tenant).create_appointment(
         customer_id=current_user.id,
         barber_user_id=payload.barber_id,
         service_id=payload.service_id,
@@ -145,13 +152,15 @@ async def create_appointment(
 async def create_appointment_for_customer(
     payload: AdminAppointmentCreate,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     current_user: User = Depends(get_current_user),
+    _quota: None = Depends(demo_booking_guard),
 ) -> AppointmentRead:
     """Book a slot for another customer. Administrators only."""
     if current_user.role != UserRole.ADMIN:
         raise AuthorizationError()
 
-    appointment = await BookingService(db).create_appointment(
+    appointment = await BookingService(db, tenant).create_appointment(
         customer_id=payload.customer_id,
         barber_user_id=payload.barber_id,
         service_id=payload.service_id,
@@ -172,10 +181,12 @@ async def update_appointment_status(
     appointment_id: str,
     payload: AppointmentStatusUpdate,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
     current_user: User = Depends(get_current_user),
+    _quota: None = Depends(demo_write_guard),
 ) -> AppointmentRead:
     """Apply a state transition the caller is allowed to perform."""
-    return await AppointmentService(db).update_status(
+    return await AppointmentService(db, tenant).update_status(
         appointment_id,
         payload,
         current_user,

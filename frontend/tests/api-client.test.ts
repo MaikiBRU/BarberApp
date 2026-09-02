@@ -43,7 +43,7 @@ describe("apiRequest", () => {
         Promise.resolve({
           error: {
             type: "slot_unavailable",
-            message: "El horario ya no esta disponible",
+            message: "El horario ya no está disponible",
             details: null,
           },
         }),
@@ -55,7 +55,7 @@ describe("apiRequest", () => {
     expect((error as ApiError).status).toBe(409);
     expect((error as ApiError).type).toBe("slot_unavailable");
     expect((error as ApiError).message).toBe(
-      "El horario ya no esta disponible",
+      "El horario ya no está disponible",
     );
   });
 
@@ -67,9 +67,9 @@ describe("apiRequest", () => {
         Promise.resolve({
           error: {
             type: "validation_error",
-            message: "Datos invalidos",
+            message: "Datos inválidos",
             details: [
-              { field: "email", message: "Email invalido", type: "value" },
+              { field: "email", message: "Email inválido", type: "value" },
             ],
           },
         }),
@@ -80,7 +80,7 @@ describe("apiRequest", () => {
     )) as ApiError;
 
     expect(error.fieldErrors).toEqual([
-      { field: "email", message: "Email invalido", type: "value" },
+      { field: "email", message: "Email inválido", type: "value" },
     ]);
   });
 

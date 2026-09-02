@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.tenancy import Tenant
 from exceptions.errors import (
     AuthorizationError,
     BusinessRuleError,
@@ -27,10 +28,15 @@ from services.appointment_view import (
 class AppointmentService:
     """Read and transition appointments under role-based rules."""
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(
+        self,
+        db: AsyncSession,
+        tenant: Tenant | None = None,
+    ) -> None:
         """Wire the appointment repository."""
         self.db = db
-        self.appointments = AppointmentRepository(db)
+        self.tenant = tenant or Tenant.real()
+        self.appointments = AppointmentRepository(db, self.tenant)
 
     async def list_for_viewer(
         self,
@@ -101,7 +107,7 @@ class AppointmentService:
             changes["cancellation_reason"] = data.cancellation_reason
         elif data.cancellation_reason:
             raise ValidationError(
-                "A cancellation reason only applies when cancelling.",
+                "El motivo de cancelación solo aplica al cancelar un turno.",
             )
 
         updated = await self.appointments.update(appointment, changes)
@@ -138,11 +144,11 @@ class AppointmentService:
         """Return an appointment the viewer may read, or raise."""
         appointment = await self.appointments.get_detail(appointment_id)
         if appointment is None:
-            raise NotFoundError("Appointment", appointment_id)
+            raise NotFoundError("appointment", appointment_id)
         if not can_view(appointment, viewer):
             # Report 404 rather than 403 so the endpoint does not confirm
             # that an appointment with this id exists.
-            raise NotFoundError("Appointment", appointment_id)
+            raise NotFoundError("appointment", appointment_id)
         return appointment
 
     @staticmethod
@@ -154,18 +160,18 @@ class AppointmentService:
         """Enforce the state machine and the per-role permissions."""
         if next_status == appointment.status:
             raise BusinessRuleError(
-                f"The appointment is already {next_status.value}.",
+                f"El turno ya está en estado {next_status.value}.",
             )
 
         reachable = STATUS_TRANSITIONS.get(appointment.status, frozenset())
         if not reachable:
             raise BusinessRuleError(
-                f"A {appointment.status.value} appointment is final.",
+                f"Un turno en estado {appointment.status.value} es final.",
             )
         if next_status not in reachable:
             raise BusinessRuleError(
-                f"Cannot move an appointment from "
-                f"{appointment.status.value} to {next_status.value}.",
+                f"No se puede pasar un turno de "
+                f"{appointment.status.value} a {next_status.value}.",
             )
 
         allowed = allowed_transitions(appointment, viewer)
@@ -178,8 +184,8 @@ class AppointmentService:
             and is_owner(appointment, viewer)
         ):
             raise BusinessRuleError(
-                "This booking is too close to its start time to be "
-                "cancelled online. Contact the shop instead.",
+                "Este turno está demasiado cerca de su horario para "
+                "cancelarse online. Comunicate con la barbería.",
             )
 
         raise AuthorizationError()

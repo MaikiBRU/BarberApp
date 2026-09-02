@@ -6,7 +6,20 @@ manages catalog, staff and opening hours.
 
 The MVP targets a single shop. Every table that would need it already
 carries a nullable `shop_id`, so a multi-shop SaaS can be layered on
-without rewriting the domain.
+without rewriting the domain — and the portfolio demo puts that seam to
+work today.
+
+## Two ways in
+
+| | |
+| --- | --- |
+| **`/demo`** | A throwaway barbershop, created on the spot, no signup. It arrives seeded with staff, catalog, opening hours and a week of appointments, and you can walk it as customer, barber or administrator against the same data. |
+| **`/login`, `/register`** | The same application with real accounts and data that persists. |
+
+The demo is not a mock. It runs the production code paths against the
+production schema; a sandbox is simply a tenant whose `shop_id` is its
+session token, so every query filters it out of the real shop and out of
+every other visitor's sandbox.
 
 ## Stack
 
@@ -35,6 +48,30 @@ allowed to perform.
 Everything a barber sees for the whole shop, plus management of
 services, extras, barber accounts and weekly opening hours, and a
 filterable, paginated view of every appointment.
+
+## The demo sandbox
+
+`POST /api/v1/demo/session` is the only unauthenticated write in the
+system. It mints a sandbox, seeds it, and returns a token scoped to that
+sandbox and to one persona inside it.
+
+- **Isolation is a query filter, not a convention.** Repositories carry
+  the tenant and every read is scoped by it. A demo token resolves only
+  to users inside its own sandbox, and signing up while holding one
+  creates the account inside the sandbox rather than in the real shop.
+- **Three roles, one dataset.** The visitor switches between customer,
+  barber and administrator; each switch mints a token for the matching
+  seeded account without leaving the sandbox.
+- **Bounded.** Absolute TTL and idle timeout, both checked on every
+  request; per-sandbox caps on bookings and configuration changes; a
+  per-address creation limit and a global cap on live sandboxes.
+- **Disposable.** Reset reseeds in place; ending a session deletes every
+  row it owns. Expired sandboxes are removed by `cleanup_expired`.
+- **Tokens cannot outlive their sandbox**: the JWT expiry is clamped to
+  the session expiry.
+
+Turn it off entirely with `DEMO_ENABLED=false`; `/demo/config` then
+reports `enabled: false` and the landing page says so.
 
 ## The booking engine
 
@@ -202,6 +239,13 @@ The backend container applies migrations before starting the API.
 | `BOOKING_MAX_ADVANCE_DAYS` | `60` | How far ahead customers may book |
 | `BOOKING_CANCELLATION_CUTOFF_MINUTES` | `120` | Customer self-cancellation window |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | API base URL for the browser |
+| `DEMO_ENABLED` | `true` | Serves the portfolio demo sandbox |
+| `DEMO_SESSION_TTL_MINUTES` | `45` | Absolute sandbox lifetime |
+| `DEMO_IDLE_TIMEOUT_MINUTES` | `15` | Idle timeout for a sandbox |
+| `DEMO_MAX_APPOINTMENTS` | `12` | Bookings allowed per sandbox |
+| `DEMO_MAX_WRITES` | `80` | Configuration changes per sandbox |
+| `DEMO_MAX_ACTIVE_SESSIONS` | `40` | Global cap on live sandboxes |
+| `DEMO_RATE_LIMIT_PER_HOUR` | `6` | Sandboxes per client address |
 
 Full examples in `.env.example` (Docker), `backend/.env.example` and
 `frontend/.env.local.example`. `.env` files are gitignored.
@@ -236,6 +280,12 @@ Interactive documentation at `/api/docs` while `DEBUG` is on.
 | `PATCH` | `/api/v1/appointments/{id}/status` | per the transition matrix |
 | `GET` | `/api/v1/dashboard/summary` | admin, barber |
 | `GET` | `/api/v1/dashboard/today` | admin, barber |
+| `GET` | `/api/v1/demo/config` | public |
+| `POST` | `/api/v1/demo/session` | public |
+| `GET` | `/api/v1/demo/session` | demo token |
+| `POST` | `/api/v1/demo/session/role` | demo token |
+| `POST` | `/api/v1/demo/session/reset` | demo token |
+| `POST` | `/api/v1/demo/session/end` | demo token |
 | `GET` | `/health`, `/api/v1/health`, `/api/v1/ready` | public |
 
 Every error, including validation failures, uses one envelope:
@@ -276,13 +326,15 @@ caller, so the UI only ever offers actions the server will accept.
 cd frontend; npm test
 ```
 
-82 backend tests (unit plus integration against an isolated SQLite
-database) and 34 frontend tests. They cover authentication and account
+95 backend tests (unit plus integration against an isolated SQLite
+database) and 42 frontend tests. They cover authentication and account
 enumeration, the role matrix, IDOR and mass-assignment attempts, slot
 generation, double booking, overlap, inactive resources, time off,
 closed days, status transitions, cancellation policy, dashboard
-figures, configuration safety and the error-versus-empty distinction in
-the UI.
+figures, configuration safety, the error-versus-empty distinction in the
+UI, and the demo sandbox: tenant isolation in both directions, isolation
+between two sandboxes, persona switching, quota enforcement, reset and
+teardown.
 
 ## Validation commands
 
@@ -347,3 +399,9 @@ service container.
 - Google OAuth is not implemented.
 - Sessions are stored in `localStorage`, which is appropriate for this
   MVP but would move to httpOnly cookies alongside a refresh-token flow.
+- Demo sandbox cleanup runs on demand (`cleanup_expired`) rather than on
+  a schedule; a deployment should call it from a cron job or a worker.
+- The per-address limit on sandbox creation is in-process like the auth
+  throttle. The cap that has to hold globally, `DEMO_MAX_ACTIVE_SESSIONS`,
+  is enforced with a database count, so it holds regardless of replica
+  count.

@@ -105,7 +105,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         return error_response(
             422,
             "validation_error",
-            "The submitted data is invalid.",
+            "Revisá los datos ingresados.",
             details=_validation_details(exc),
         )
 
@@ -119,7 +119,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         message = (
             exc.detail
             if isinstance(exc.detail, str)
-            else "Request could not be completed."
+            else "No se pudo completar la solicitud."
         )
         headers = dict(exc.headers) if exc.headers else None
         return error_response(
@@ -144,7 +144,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         return error_response(
             409,
             "conflict",
-            "The operation conflicts with existing data.",
+            "La operación entra en conflicto con datos existentes.",
         )
 
     @app.exception_handler(SQLAlchemyError)
@@ -161,7 +161,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         return error_response(
             503,
             "database_unavailable",
-            "The service is temporarily unavailable.",
+            "El servicio no está disponible en este momento.",
         )
 
     @app.exception_handler(Exception)
@@ -179,6 +179,6 @@ def register_exception_handlers(app: FastAPI) -> None:
         return error_response(
             500,
             "internal_error",
-            "An unexpected error occurred.",
+            "Ocurrió un error inesperado.",
             details=details,
         )

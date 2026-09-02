@@ -14,7 +14,7 @@ export default function DashboardLayout({
     <RequireAuth roles={["admin", "barber"]}>
       <PageContainer>
         <PageHeader
-          description="Informacion operativa calculada sobre los turnos reales."
+          description="Información operativa calculada sobre los turnos reales."
           eyebrow="Panel interno"
           title="Panel"
         />

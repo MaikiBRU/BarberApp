@@ -41,10 +41,45 @@ repositories either lands whole or not at all.
 | `Appointment` | The booking, with its occupied time range |
 | `Payment` | Payment record attached to an appointment |
 
+| `DemoSession` | Registry of throwaway sandboxes for the portfolio demo |
+
 Nullable `shop_id` columns on `users`, `services`, `product_extras`,
 `business_hours` and `appointments` are the seam for multi-tenancy.
-Introducing shops means populating them and adding a tenant filter in
-the repositories, not reshaping the schema.
+
+## Tenancy
+
+`core/tenancy.py` defines a `Tenant`: either the real shop
+(`shop_id IS NULL`) or one demo sandbox (`shop_id = <session token>`).
+Repositories take the tenant, filter every read through it and stamp
+every insert with it. `BaseRepository.get_by_id` re-checks ownership
+after the primary-key fetch, because `Session.get` bypasses filters.
+
+Models without their own `shop_id` inherit one: barber and customer
+profiles join `users`, time off resolves through the scoped barber
+repository, and payments and appointment extras hang off appointments.
+
+The demo is what forced this to be real rather than aspirational. A
+visitor holding a sandbox token must not read the shop's appointments,
+must not appear in its catalog, and must not create a real account by
+signing up — all three are the same filter, and all three are tested in
+`tests/integration/test_demo.py`.
+
+## Demo sandboxes
+
+A sandbox is a tenant with a clock. `POST /demo/session` mints one,
+seeds it with staff, catalog, hours and a spread of appointments across
+the past, today and the coming days, and returns a token scoped to the
+sandbox and to one persona in it.
+
+Expiry is enforced in `get_tenant` on every request, not by trusting the
+cleanup pass, and the JWT expiry is clamped to the session expiry so a
+token can never outlive its data. Quotas live in `api/v1/deps.py` as two
+dependencies that are no-ops outside the demo, which is why one set of
+routes serves both audiences.
+
+The seed writes appointments straight to the model rather than through
+the booking service: it deliberately places rows in the past, which the
+booking rules correctly refuse.
 
 ## Booking engine
 

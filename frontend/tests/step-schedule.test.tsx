@@ -61,7 +61,7 @@ describe("StepSchedule", () => {
     renderStep({ isOpenDay: false });
 
     expect(
-      screen.getByText("La barberia esta cerrada ese dia"),
+      screen.getByText("La barbería está cerrada ese día"),
     ).toBeInTheDocument();
   });
 

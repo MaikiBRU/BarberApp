@@ -147,7 +147,7 @@ export async function apiRequest<T>(
       throw error;
     }
     throw new ApiError(
-      "No se pudo conectar con el servidor. Revisa tu conexion e intenta de nuevo.",
+      "No se pudo conectar con el servidor. Revisá tu conexión e intentá de nuevo.",
       0,
       "network_error",
     );

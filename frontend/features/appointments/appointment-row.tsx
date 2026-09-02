@@ -76,7 +76,7 @@ export function AppointmentRow({
             <StatusActions appointment={appointment} />
           ) : perspective === "customer" && isActive ? (
             <p className="text-xs text-ink-muted sm:max-w-40 sm:text-right">
-              Ya no se puede cancelar online. Comunicate con la barberia.
+              Ya no se puede cancelar online. Comunicate con la barbería.
             </p>
           ) : null}
         </div>

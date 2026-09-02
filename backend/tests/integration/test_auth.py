@@ -69,7 +69,10 @@ def test_login_with_wrong_password_is_rejected(api: ApiHelper) -> None:
     )
 
     assert response.status_code == 401
-    assert response.json()["error"]["message"] == "Invalid email or password."
+    assert (
+        response.json()["error"]["message"]
+        == "Email o contraseña incorrectos."
+    )
 
 
 def test_login_hides_whether_an_account_exists(api: ApiHelper) -> None:

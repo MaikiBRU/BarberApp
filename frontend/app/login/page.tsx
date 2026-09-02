@@ -15,13 +15,13 @@ export default function LoginPage() {
           Entrar a tu cuenta
         </h1>
         <p className="mt-1 text-sm text-ink-muted">
-          Accede para reservar y gestionar tus turnos.
+          Accedé para reservar y gestionar tus turnos.
         </p>
         <div className="mt-6">
           <LoginForm />
         </div>
         <p className="mt-5 text-sm text-ink-muted">
-          No tenes cuenta?{" "}
+          No tenés cuenta?{" "}
           <Link
             className="font-semibold text-accent underline-offset-4 hover:underline"
             href={routes.register}

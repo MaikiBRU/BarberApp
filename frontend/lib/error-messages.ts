@@ -10,13 +10,13 @@ import { ApiError } from "@/lib/api-client";
 export function toMessage(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.isNetworkFailure) {
-      return "No se pudo conectar con el servidor. Revisa tu conexion e intenta de nuevo.";
+      return "No se pudo conectar con el servidor. Revisá tu conexión e intentá de nuevo.";
     }
     if (error.status === 401) {
-      return "Tu sesion expiro. Inicia sesion nuevamente.";
+      return "Tu sesión expiró. Iniciá sesión nuevamente.";
     }
     if (error.status >= 500) {
-      return "El servidor tuvo un problema. Intenta de nuevo en unos minutos.";
+      return "El servidor tuvo un problema. Intentá de nuevo en unos minutos.";
     }
     return error.message;
   }
@@ -25,7 +25,7 @@ export function toMessage(error: unknown): string {
     return error.message;
   }
 
-  return "Ocurrio un error inesperado.";
+  return "Ocurrió un error inesperado.";
 }
 
 /** Map field-level backend errors onto form field names. */

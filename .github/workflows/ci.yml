@@ -33,6 +33,7 @@ jobs:
       DATABASE_URL: postgresql+asyncpg://barberuser:barberpass@localhost:5432/barberapp_test
       JWT_SECRET_KEY: ci-secret-key-not-used-outside-continuous-integration
       SHOP_TIMEZONE: America/Argentina/Buenos_Aires
+      DEMO_ENABLED: "true"
 
     steps:
       - uses: actions/checkout@v4

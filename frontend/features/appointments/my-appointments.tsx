@@ -28,7 +28,7 @@ type Filter = {
 const filters: Filter[] = [
   {
     id: "upcoming",
-    label: "Proximos",
+    label: "Próximos",
     statuses: ["pending", "confirmed"],
     upcomingOnly: true,
   },
@@ -61,7 +61,7 @@ export function MyAppointments() {
             Reservar
           </LinkButton>
         }
-        description="Consulta el estado de cada turno y cancela cuando lo necesites."
+        description="Consultá el estado de cada turno y cancela cuando lo necesites."
         title="Mis turnos"
       />
 
@@ -102,8 +102,8 @@ export function MyAppointments() {
           }
           description={
             activeFilter.upcomingOnly
-              ? "No tenes turnos proximos agendados."
-              : "Todavia no tenes turnos en tu historial."
+              ? "No tenés turnos próximos agendados."
+              : "Todavía no tenés turnos en tu historial."
           }
           title="Sin turnos"
         />

@@ -44,7 +44,7 @@ export function StepBarber({
   return (
     <fieldset className="space-y-2">
       <legend className="mb-2 text-sm font-semibold">
-        Elegi con quien te atendes
+        Elegí con quien te atendés
       </legend>
       <OptionRow
         description="Te asignamos el primero disponible en el horario que elijas."

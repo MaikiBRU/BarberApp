@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.jwt_config import get_current_user
+from auth.jwt_config import get_current_user, get_tenant
+from core.tenancy import Tenant
 from db.session import get_db
 from models.user import User
 from schemas.auth import LoginRequest, RegisterRequest, TokenResponse
@@ -23,9 +24,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def register(
     payload: RegisterRequest,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
 ) -> TokenResponse:
     """Create a customer account and return an access token."""
-    return await AuthService(db).register(payload)
+    return await AuthService(db, tenant).register(payload)
 
 
 @router.post(
@@ -36,9 +38,10 @@ async def register(
 async def login(
     payload: LoginRequest,
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
 ) -> TokenResponse:
     """Authenticate a user and return an access token."""
-    return await AuthService(db).login(payload)
+    return await AuthService(db, tenant).login(payload)
 
 
 @router.post(
@@ -50,9 +53,10 @@ async def login(
 async def token(
     form: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
+    tenant: Tenant = Depends(get_tenant),
 ) -> TokenResponse:
     """Issue a token from form credentials so Swagger can authorize."""
-    return await AuthService(db).login(
+    return await AuthService(db, tenant).login(
         LoginRequest(email=form.username, password=form.password),
     )
 

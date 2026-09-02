@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     template: `%s | ${shopConfig.name}`,
   },
   description:
-    "Reserva tu turno en la barberia, consulta disponibilidad real y gestiona la agenda del local.",
+    "Reservá tu turno en la barbería, consulta disponibilidad real y gestiona la agenda del local.",
 };
 
 export const viewport: Viewport = {

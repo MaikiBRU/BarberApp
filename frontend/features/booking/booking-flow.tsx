@@ -111,7 +111,7 @@ export function BookingFlow() {
       <Card className="p-5 sm:p-6">
         <h2 className="text-xl font-semibold">Turno reservado</h2>
         <p className="mt-2 text-sm text-ink-muted">
-          Queda pendiente de confirmacion por la barberia.
+          Queda pendiente de confirmación por la barbería.
         </p>
         <div className="mt-5 flex flex-col gap-2 sm:flex-row">
           <Link href={routes.appointment(confirmedId)}>

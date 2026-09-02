@@ -4,6 +4,7 @@ from datetime import UTC, datetime, time
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.tenancy import Tenant
 from exceptions.errors import BusinessRuleError, NotFoundError
 from models.schedule import BusinessHours
 from repositories.schedule import BusinessHoursRepository, TimeOffRepository
@@ -19,12 +20,17 @@ from schemas.schedule import (
 class ScheduleService:
     """Manage the weekly opening schedule and barber absences."""
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(
+        self,
+        db: AsyncSession,
+        tenant: Tenant | None = None,
+    ) -> None:
         """Wire the schedule repositories."""
         self.db = db
-        self.hours = BusinessHoursRepository(db)
-        self.time_off = TimeOffRepository(db)
-        self.barbers = BarberRepository(db)
+        self.tenant = tenant or Tenant.real()
+        self.hours = BusinessHoursRepository(db, self.tenant)
+        self.time_off = TimeOffRepository(db, self.tenant)
+        self.barbers = BarberRepository(db, self.tenant)
 
     async def list_business_hours(self) -> list[BusinessHoursRead]:
         """Return the weekly opening schedule."""
@@ -76,7 +82,7 @@ class ScheduleService:
         )
         if overlapping:
             raise BusinessRuleError(
-                "That window overlaps an existing time-off entry.",
+                "Ese período se superpone con otra ausencia ya cargada.",
             )
 
         created = await self.time_off.create(
@@ -97,13 +103,13 @@ class ScheduleService:
         """Remove an absence entry."""
         entry = await self.time_off.get_by_id(time_off_id)
         if entry is None or entry.barber_id != barber_profile_id:
-            raise NotFoundError("Time off", time_off_id)
+            raise NotFoundError("time_off", time_off_id)
         await self.time_off.delete(entry)
 
     async def _require_barber(self, barber_profile_id: str) -> None:
         """Raise when the barber profile does not exist."""
         if await self.barbers.get_profile(barber_profile_id) is None:
-            raise NotFoundError("Barber", barber_profile_id)
+            raise NotFoundError("barber", barber_profile_id)
 
 
 #: Opening schedule seeded for local development, in shop local time.

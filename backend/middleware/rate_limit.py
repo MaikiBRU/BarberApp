@@ -85,7 +85,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return error_response(
                 429,
                 "rate_limit_exceeded",
-                "Too many requests. Try again later.",
+                "Demasiados intentos. Probá de nuevo en unos minutos.",
                 details={"retry_after_seconds": retry_after},
                 headers={"Retry-After": str(retry_after)},
             )

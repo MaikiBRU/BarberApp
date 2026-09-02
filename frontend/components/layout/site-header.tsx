@@ -94,6 +94,9 @@ export function SiteHeader() {
             </>
           ) : (
             <>
+              <LinkButton href={routes.demo} size="sm" variant="ghost">
+                Ver demo
+              </LinkButton>
               <LinkButton href={routes.login} size="sm" variant="secondary">
                 Entrar
               </LinkButton>
@@ -142,6 +145,9 @@ export function SiteHeader() {
               </Button>
             ) : (
               <>
+                <LinkButton href={routes.demo} variant="secondary">
+                  Ver demo
+                </LinkButton>
                 <LinkButton href={routes.login} variant="secondary">
                   Entrar
                 </LinkButton>

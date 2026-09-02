@@ -51,7 +51,7 @@ export function AppointmentDetail({ appointmentId }: { appointmentId: string }) 
         <ErrorState
           message={
             isMissing
-              ? "Este turno no existe o no tenes permiso para verlo."
+              ? "Este turno no existe o no tenés permiso para verlo."
               : toMessage(query.error)
           }
           onRetry={isMissing ? undefined : () => void query.refetch()}
@@ -81,12 +81,12 @@ export function AppointmentDetail({ appointmentId }: { appointmentId: string }) 
           <DetailRow label="Cliente" value={appointment.customer.name} />
           {appointment.customer.phone ? (
             <DetailRow
-              label="Telefono del cliente"
+              label="Teléfono del cliente"
               value={appointment.customer.phone}
             />
           ) : null}
           <DetailRow
-            label="Duracion"
+            label="Duración"
             value={formatDuration(appointment.duration_minutes)}
           />
           <DetailRow
@@ -126,7 +126,7 @@ export function AppointmentDetail({ appointmentId }: { appointmentId: string }) 
           ) : null}
           {appointment.cancellation_reason ? (
             <DetailRow
-              label="Motivo de cancelacion"
+              label="Motivo de cancelación"
               value={appointment.cancellation_reason}
             />
           ) : null}
@@ -138,7 +138,7 @@ export function AppointmentDetail({ appointmentId }: { appointmentId: string }) 
           <h2 className="text-sm font-semibold">Acciones disponibles</h2>
           <p className="mt-1 text-sm text-ink-muted">
             {appointment.can_cancel
-              ? "Podes cancelar este turno desde aca."
+              ? "Podés cancelar este turno desde acá."
               : "Estas son las acciones que tu cuenta puede realizar."}
           </p>
           <div className="mt-3">

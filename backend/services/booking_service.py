@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.tenancy import Tenant
 from exceptions.errors import (
     BusinessRuleError,
     NotFoundError,
@@ -25,12 +26,17 @@ class BookingService:
     races another customer still cannot create an invalid booking.
     """
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(
+        self,
+        db: AsyncSession,
+        tenant: Tenant | None = None,
+    ) -> None:
         """Wire the availability engine and the write repositories."""
         self.db = db
-        self.availability = AvailabilityService(db)
-        self.appointments = AppointmentRepository(db)
-        self.users = UserRepository(db)
+        self.tenant = tenant or Tenant.real()
+        self.availability = AvailabilityService(db, self.tenant)
+        self.appointments = AppointmentRepository(db, self.tenant)
+        self.users = UserRepository(db, self.tenant)
 
     async def create_appointment(
         self,
@@ -52,14 +58,14 @@ class BookingService:
             barber_user_id
         )
         if not self.availability.is_bookable(barber_profile):
-            raise NotFoundError("Barber", barber_user_id)
+            raise NotFoundError("barber", barber_user_id)
 
         customer = await self.users.get_by_id(customer_id)
         if customer is None or not customer.is_active:
-            raise NotFoundError("Customer", customer_id)
+            raise NotFoundError("customer", customer_id)
         if customer.id == barber_user_id:
             raise BusinessRuleError(
-                "A barber cannot book an appointment with themselves.",
+                "Un barbero no puede reservarse un turno consigo mismo.",
             )
 
         await self._assert_slot_bookable(
@@ -69,6 +75,7 @@ class BookingService:
         )
 
         appointment = Appointment(
+            shop_id=self.tenant.shop_id,
             customer_id=customer.id,
             barber_id=barber_user_id,
             service_id=service.id,
@@ -97,7 +104,7 @@ class BookingService:
         """Return the stored appointment with its relations loaded."""
         appointment = await self.appointments.get_detail(appointment_id)
         if appointment is None:
-            raise NotFoundError("Appointment", appointment_id)
+            raise NotFoundError("appointment", appointment_id)
         return appointment
 
     async def _assert_slot_bookable(
@@ -113,13 +120,15 @@ class BookingService:
 
         if starts_at < earliest:
             raise BusinessRuleError(
-                "Appointments must be booked at least "
-                f"{settings.booking_min_lead_minutes} minutes in advance.",
+                "Los turnos se reservan con al menos "
+                f"{settings.booking_min_lead_minutes} minutos de "
+                "anticipación.",
             )
         if starts_at > latest:
             raise BusinessRuleError(
-                "Appointments cannot be booked more than "
-                f"{settings.booking_max_advance_days} days in advance.",
+                "No se pueden reservar turnos con más de "
+                f"{settings.booking_max_advance_days} días de "
+                "anticipación.",
             )
 
         local_day = starts_at.astimezone(settings.timezone).date()

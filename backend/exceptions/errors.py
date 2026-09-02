@@ -51,7 +51,7 @@ class AuthenticationError(AppError):
 
     def __init__(
         self,
-        message: str = "Invalid authentication credentials",
+        message: str = "Tu sesión no es válida. Iniciá sesión de nuevo.",
         *,
         details: dict[str, Any] | None = None,
     ) -> None:
@@ -67,12 +67,25 @@ class AuthorizationError(AppError):
 
     def __init__(
         self,
-        message: str = "Insufficient permissions",
+        message: str = "Tu cuenta no tiene permiso para hacer esto.",
         *,
         details: dict[str, Any] | None = None,
     ) -> None:
         """Default to a generic forbidden message."""
         super().__init__(message, details=details)
+
+
+#: Spanish sentence per resource slug. A template would get the
+#: grammatical gender wrong half the time.
+NOT_FOUND_MESSAGES: dict[str, str] = {
+    "appointment": "El turno no existe o no está disponible.",
+    "service": "El servicio no existe o ya no se ofrece.",
+    "extra": "El extra no existe o ya no está disponible.",
+    "barber": "El barbero no existe o no está tomando turnos.",
+    "barber_profile": "No encontramos el perfil de barbero.",
+    "customer": "El cliente no existe.",
+    "time_off": "La ausencia no existe.",
+}
 
 
 class NotFoundError(AppError):
@@ -86,8 +99,11 @@ class NotFoundError(AppError):
         resource: str,
         identifier: str | None = None,
     ) -> None:
-        """Build a message from the resource name and optional id."""
-        message = f"{resource} not found"
+        """Build a message from the resource slug and optional id."""
+        message = NOT_FOUND_MESSAGES.get(
+            resource,
+            "No encontramos lo que buscabas.",
+        )
         details = {"resource": resource}
         if identifier:
             details["id"] = identifier
@@ -108,7 +124,7 @@ class SlotUnavailableError(ConflictError):
 
     def __init__(
         self,
-        message: str = "The selected time slot is no longer available",
+        message: str = "Ese horario ya fue tomado. Elegí otro, por favor.",
         *,
         details: dict[str, Any] | None = None,
     ) -> None:
@@ -131,7 +147,7 @@ class RateLimitError(AppError):
 
     def __init__(
         self,
-        message: str = "Too many requests. Try again later.",
+        message: str = "Demasiados intentos. Probá de nuevo en unos minutos.",
         *,
         retry_after: int | None = None,
     ) -> None:

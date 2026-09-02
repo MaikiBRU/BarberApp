@@ -2,6 +2,7 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.tenancy import Tenant
 from exceptions.errors import ConflictError, NotFoundError
 from repositories.catalog import ProductExtraRepository, ServiceRepository
 from schemas.service import (
@@ -17,11 +18,16 @@ from schemas.service import (
 class CatalogService:
     """Coordinate service and extra workflows."""
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(
+        self,
+        db: AsyncSession,
+        tenant: Tenant | None = None,
+    ) -> None:
         """Wire the catalog repositories."""
         self.db = db
-        self.services = ServiceRepository(db)
-        self.extras = ProductExtraRepository(db)
+        self.tenant = tenant or Tenant.real()
+        self.services = ServiceRepository(db, self.tenant)
+        self.extras = ProductExtraRepository(db, self.tenant)
 
     async def list_services(
         self,
@@ -37,7 +43,7 @@ class CatalogService:
     async def create_service(self, data: ServiceCreate) -> ServiceRead:
         """Create a bookable service."""
         if await self.services.name_exists(data.name):
-            raise ConflictError("A service with that name already exists.")
+            raise ConflictError("Ya existe un servicio con ese nombre.")
         service = await self.services.create(data.model_dump())
         return ServiceRead.model_validate(service)
 
@@ -49,7 +55,7 @@ class CatalogService:
         """Update a bookable service."""
         service = await self.services.get_by_id(service_id)
         if service is None:
-            raise NotFoundError("Service", service_id)
+            raise NotFoundError("service", service_id)
 
         changes = data.model_dump(exclude_unset=True)
         name = changes.get("name")
@@ -57,7 +63,7 @@ class CatalogService:
             name,
             exclude_id=service_id,
         ):
-            raise ConflictError("A service with that name already exists.")
+            raise ConflictError("Ya existe un servicio con ese nombre.")
 
         updated = await self.services.update(service, changes)
         return ServiceRead.model_validate(updated)
@@ -77,7 +83,7 @@ class CatalogService:
     ) -> ProductExtraRead:
         """Create an appointment extra."""
         if await self.extras.name_exists(data.name):
-            raise ConflictError("An extra with that name already exists.")
+            raise ConflictError("Ya existe un extra con ese nombre.")
         extra = await self.extras.create(data.model_dump())
         return ProductExtraRead.model_validate(extra)
 
@@ -89,12 +95,12 @@ class CatalogService:
         """Update an appointment extra."""
         extra = await self.extras.get_by_id(extra_id)
         if extra is None:
-            raise NotFoundError("Extra", extra_id)
+            raise NotFoundError("extra", extra_id)
 
         changes = data.model_dump(exclude_unset=True)
         name = changes.get("name")
         if name and await self.extras.name_exists(name, exclude_id=extra_id):
-            raise ConflictError("An extra with that name already exists.")
+            raise ConflictError("Ya existe un extra con ese nombre.")
 
         updated = await self.extras.update(extra, changes)
         return ProductExtraRead.model_validate(updated)

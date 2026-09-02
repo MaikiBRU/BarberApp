@@ -69,7 +69,7 @@ export function AppointmentsBoard() {
   return (
     <Card>
       <CardHeader
-        description="Filtra por estado y cambia el estado de cada turno."
+        description="Filtrá por estado y cambia el estado de cada turno."
         title="Todos los turnos"
       />
 

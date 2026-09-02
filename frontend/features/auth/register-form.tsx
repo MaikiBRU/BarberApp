@@ -48,15 +48,15 @@ export function RegisterForm() {
         autoComplete="tel"
         error={fieldErrors.phone}
         hint="Lo usamos solo para avisarte por un cambio de turno."
-        label="Telefono (opcional)"
+        label="Teléfono (opcional)"
         name="phone"
         type="tel"
       />
       <InputField
         autoComplete="new-password"
         error={fieldErrors.password}
-        hint="Minimo 8 caracteres."
-        label="Contrasena"
+        hint="Mínimo 8 caracteres."
+        label="Contraseña"
         minLength={8}
         name="password"
         required

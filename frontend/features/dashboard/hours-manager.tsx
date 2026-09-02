@@ -69,7 +69,7 @@ export function HoursManager() {
     <Card>
       <CardHeader
         description="Definen que horarios se ofrecen al reservar."
-        title="Horarios de atencion"
+        title="Horarios de atención"
       />
 
       {query.isPending ? (

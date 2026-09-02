@@ -7,6 +7,7 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from core.tenancy import Tenant
 from models.appointment import Appointment
 from models.enums import BLOCKING_STATUSES, AppointmentStatus
 from models.user import User
@@ -16,9 +17,9 @@ from repositories.base import BaseRepository
 class AppointmentRepository(BaseRepository[Appointment]):
     """Data access for appointments."""
 
-    def __init__(self, db: AsyncSession) -> None:
+    def __init__(self, db: AsyncSession, tenant: Tenant | None = None) -> None:
         """Initialize repository for the Appointment model."""
-        super().__init__(db, Appointment)
+        super().__init__(db, Appointment, tenant, Appointment.shop_id)
 
     @staticmethod
     def _with_relations(statement: Select) -> Select:
@@ -37,7 +38,9 @@ class AppointmentRepository(BaseRepository[Appointment]):
     async def get_detail(self, appointment_id: str) -> Appointment | None:
         """Return one appointment with related entities loaded."""
         statement = self._with_relations(
-            select(Appointment).where(Appointment.id == appointment_id)
+            self.scoped(
+                select(Appointment).where(Appointment.id == appointment_id)
+            )
         )
         result = await self.db.execute(statement)
         return result.scalar_one_or_none()
@@ -89,7 +92,7 @@ class AppointmentRepository(BaseRepository[Appointment]):
         }
 
         count_statement = self._apply_filters(
-            select(func.count()).select_from(Appointment),
+            self.scoped(select(func.count()).select_from(Appointment)),
             **filters,
         )
         total = int((await self.db.execute(count_statement)).scalar_one())
@@ -100,7 +103,7 @@ class AppointmentRepository(BaseRepository[Appointment]):
             else Appointment.starts_at.asc()
         )
         page_statement = self._with_relations(
-            self._apply_filters(select(Appointment), **filters)
+            self._apply_filters(self.scoped(select(Appointment)), **filters)
             .order_by(order)
             .limit(limit)
             .offset(offset)
@@ -118,7 +121,7 @@ class AppointmentRepository(BaseRepository[Appointment]):
         """Return active appointments overlapping the requested window."""
         if not barber_ids:
             return []
-        statement = (
+        statement = self.scoped(
             select(Appointment)
             .where(Appointment.barber_id.in_(barber_ids))
             .where(Appointment.status.in_(tuple(BLOCKING_STATUSES)))
@@ -138,7 +141,7 @@ class AppointmentRepository(BaseRepository[Appointment]):
         exclude_id: str | None = None,
     ) -> bool:
         """Return True when the barber already has an overlapping slot."""
-        statement = (
+        statement = self.scoped(
             select(Appointment.id)
             .where(Appointment.barber_id == barber_id)
             .where(Appointment.status.in_(tuple(BLOCKING_STATUSES)))
@@ -160,8 +163,10 @@ class AppointmentRepository(BaseRepository[Appointment]):
     ) -> dict[AppointmentStatus, int]:
         """Return appointment counts grouped by status."""
         statement = self._apply_filters(
-            select(Appointment.status, func.count()).group_by(
-                Appointment.status
+            self.scoped(
+                select(Appointment.status, func.count()).group_by(
+                    Appointment.status
+                )
             ),
             customer_id=None,
             barber_id=barber_id,
@@ -188,7 +193,7 @@ class AppointmentRepository(BaseRepository[Appointment]):
             + Appointment.extras_price_cents
             + Appointment.tip_cents
         )
-        statement = (
+        statement = self.scoped(
             select(func.coalesce(func.sum(total), 0))
             .where(Appointment.status == AppointmentStatus.COMPLETED)
             .where(Appointment.starts_at >= date_from)

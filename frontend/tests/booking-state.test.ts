@@ -14,7 +14,7 @@ import type {
 const service: ServiceRead = {
   id: "svc-1",
   shop_id: null,
-  name: "Corte clasico",
+  name: "Corte clásico",
   description: null,
   duration_minutes: 45,
   price_cents: 1300000,

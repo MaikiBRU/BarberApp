@@ -104,7 +104,7 @@ export function ServiceManager() {
           />
           <InputField
             error={fieldErrors.duration_minutes}
-            label="Duracion (minutos)"
+            label="Duración (minutos)"
             max={480}
             min={5}
             name="duration"
@@ -123,7 +123,7 @@ export function ServiceManager() {
           <div className="sm:col-span-2">
             <TextareaField
               error={fieldErrors.description}
-              label="Descripcion"
+              label="Descripción"
               maxLength={1000}
               name="description"
             />
@@ -150,7 +150,7 @@ export function ServiceManager() {
         />
       ) : query.data.length === 0 ? (
         <EmptyState
-          description="Crea el primer servicio para habilitar las reservas."
+          description="Creá el primer servicio para habilitar las reservas."
           title="Sin servicios"
         />
       ) : (

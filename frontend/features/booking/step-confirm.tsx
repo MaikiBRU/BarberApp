@@ -53,12 +53,12 @@ export function StepConfirm({
           label="Fecha y hora"
           value={slot ? formatDateTime(slot.startsAt) : undefined}
         />
-        <SummaryRow label="Duracion" value={formatDuration(totalMinutes)} />
+        <SummaryRow label="Duración" value={formatDuration(totalMinutes)} />
         <SummaryRow label="Total estimado" value={formatPrice(totalCents)} />
       </dl>
 
       <SelectField
-        label="Metodo de pago"
+        label="Método de pago"
         onChange={(event) =>
           onPaymentMethodChange(event.target.value as PaymentMethod)
         }
@@ -81,7 +81,7 @@ export function StepConfirm({
 
       {isSessionReady && !isAuthenticated ? (
         <FormMessage tone="error">
-          Inicia sesion para confirmar la reserva.
+          Iniciá sesión para confirmar la reserva.
         </FormMessage>
       ) : null}
       {submitError ? (

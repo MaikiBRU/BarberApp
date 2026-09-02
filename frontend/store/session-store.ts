@@ -12,14 +12,22 @@ type StoredSession = {
   token: string;
   user: SessionUser;
   expiresAt: number;
+  /** True while the token belongs to a portfolio demo sandbox. */
+  isDemo: boolean;
 };
 
 type SessionState = {
   token: string | null;
   user: SessionUser | null;
+  isDemo: boolean;
   /** False until the first hydration attempt has finished. */
   isReady: boolean;
-  setSession: (token: string, user: SessionUser, expiresIn: number) => void;
+  setSession: (
+    token: string,
+    user: SessionUser,
+    expiresIn: number,
+    options?: { isDemo?: boolean },
+  ) => void;
   clearSession: () => void;
   hydrate: () => void;
 };
@@ -59,24 +67,26 @@ function readStoredSession(): StoredSession | null {
 export const useSessionStore = create<SessionState>((set) => ({
   token: null,
   user: null,
+  isDemo: false,
   isReady: false,
 
-  setSession: (token, user, expiresIn) => {
+  setSession: (token, user, expiresIn, options) => {
+    const isDemo = options?.isDemo ?? false;
     const expiresAt = Date.now() + expiresIn * 1000;
     if (typeof window !== "undefined") {
       window.localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ token, user, expiresAt }),
+        JSON.stringify({ token, user, expiresAt, isDemo }),
       );
     }
-    set({ token, user, isReady: true });
+    set({ token, user, isDemo, isReady: true });
   },
 
   clearSession: () => {
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(STORAGE_KEY);
     }
-    set({ token: null, user: null, isReady: true });
+    set({ token: null, user: null, isDemo: false, isReady: true });
   },
 
   hydrate: () => {
@@ -84,6 +94,7 @@ export const useSessionStore = create<SessionState>((set) => ({
     set({
       token: stored?.token ?? null,
       user: stored?.user ?? null,
+      isDemo: stored?.isDemo ?? false,
       isReady: true,
     });
   },
