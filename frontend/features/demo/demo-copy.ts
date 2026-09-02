@@ -22,5 +22,5 @@ export const STACK = [
 export const HIGHLIGHTS = [
   { value: "3", label: "roles con permisos distintos" },
   { value: "15 min", label: "grilla de horarios configurable" },
-  { value: "137", label: "pruebas automatizadas" },
+  { value: "143", label: "pruebas automatizadas" },
 ] as const;

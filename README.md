@@ -326,8 +326,8 @@ caller, so the UI only ever offers actions the server will accept.
 cd frontend; npm test
 ```
 
-95 backend tests (unit plus integration against an isolated SQLite
-database) and 42 frontend tests. They cover authentication and account
+98 backend tests (unit plus integration against an isolated SQLite
+database) and 45 frontend tests. They cover authentication and account
 enumeration, the role matrix, IDOR and mass-assignment attempts, slot
 generation, double booking, overlap, inactive resources, time off,
 closed days, status transitions, cancellation policy, dashboard
@@ -363,6 +363,58 @@ docker compose config --quiet
 GitHub Actions runs all of the above on every pull request, with the
 backend job executing migrations and tests against a real PostgreSQL
 service container.
+
+## Deployment
+
+Live at **https://barberapp.aaronbrumat.com.ar** (the demo entry point is
+`/demo`).
+
+```text
+                    Cloudflare (DNS + TLS + Workers)
+                                |
+  barberapp.aaronbrumat.com.ar -+-> Worker (OpenNext / Next.js)
+                                     |
+                                     | /api/* rewrite, same origin
+                                     v
+                                   EC2 Ubuntu
+                                     |
+                                     +-- Caddy (systemd, TLS)
+                                           |
+                                           +-- barberapp-api  (uvicorn, 127.0.0.1:8001)
+                                           `-- postgres:16    (shared, own database)
+```
+
+Points worth stating because they contradict the usual assumptions:
+
+- **The browser never makes a cross-origin call.** It requests `/api/...`
+  on the site's own origin and a Next rewrite forwards it, so CORS never
+  enters the picture in production.
+- **PostgreSQL is shared, the database is not.** The instance already ran
+  another application, so BarberApp uses a separate `barberapp` database
+  and role rather than a second engine on a 1 GB box.
+- **The API listens on loopback only** and carries a memory limit, so it
+  cannot be reached except through Caddy and cannot starve its neighbour.
+- **A push does not deploy.** `scripts/deploy.sh` runs on the server; it
+  backs up the database before anything else and prints the rollback
+  commands if `/health` does not answer.
+
+### Deploying the API
+
+```bash
+ssh -i <key>.pem ubuntu@<host>
+cd ~/barberapp
+./scripts/deploy.sh
+```
+
+### Deploying the frontend
+
+```powershell
+cd frontend
+npm run deploy:cf
+```
+
+`wrangler.jsonc` pins the custom domain and passes `API_ORIGIN`, which is
+baked into the rewrite at build time.
 
 ## Security notes
 
