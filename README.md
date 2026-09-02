@@ -451,8 +451,10 @@ baked into the rewrite at build time.
 - Google OAuth is not implemented.
 - Sessions are stored in `localStorage`, which is appropriate for this
   MVP but would move to httpOnly cookies alongside a refresh-token flow.
-- Demo sandbox cleanup runs on demand (`cleanup_expired`) rather than on
-  a schedule; a deployment should call it from a cron job or a worker.
+- Demo sandbox cleanup is a scheduled job, not part of the request path:
+  the server runs `scripts/cleanup_demo.py` every ten minutes. Expiry
+  itself is still enforced on every request, so a sandbox stops working
+  the moment it lapses regardless of when the sweep runs.
 - The per-address limit on sandbox creation is in-process like the auth
   throttle. The cap that has to hold globally, `DEMO_MAX_ACTIVE_SESSIONS`,
   is enforced with a database count, so it holds regardless of replica
